@@ -8,8 +8,10 @@ import random
 """
 class DynamicNet(nn.Module):
     def __init__(self,D_in,H,D_out):
+        #构建网络
         super(DynamicNet, self).__init__()
         self.input_linear=nn.Linear(D_in,H)
+        #根据随机数的不同，可能传入多次中间层
         self.middle_linear=nn.Linear(H,H)
         self.output_linear=nn.Linear(H,D_out)
 

@@ -34,7 +34,7 @@ def imshow(inp, title=None):
     std = np.array([0.229, 0.224, 0.225])
     inp = std * inp + mean
     inp = np.clip(inp, 0, 1)  # 把小于0的转化为0，大于1的转化为0
-    plt.imshow(inp)
+    plt.imshow(inp)  # plt的show传入的是numpy形式的图片
     if title is not None:
         plt.title(title)
     plt.show()
@@ -75,8 +75,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             if phase == 'train':
                 scheduler.step()
                 model.train()  # 训练模式
-                #训练模式启用BatchNormalization 和 Dropout
-                #验证模式不启用 BatchNormalization 和 Dropout
+                # 训练模式启用BatchNormalization 和 Dropout
+                # 验证模式不启用 BatchNormalization 和 Dropout
             else:
                 model.eval()  # 验证模式
             running_loss = 0
@@ -85,14 +85,14 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 optimizer.zero_grad()
-                with torch.set_grad_enabled(phase == 'train'):#当开启训练模式的时候，才会计算梯度
+                with torch.set_grad_enabled(phase == 'train'):  # 当开启训练模式的时候，才会计算梯度
                     outputs = model(inputs)
                     _, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                running_loss += loss.item() * inputs.shape[0]#这里不能用size了，会出错。针对损失函数，这里要乘上inputs的size
+                running_loss += loss.item() * inputs.shape[0]  # 这里不能用size了，会出错。针对损失函数，这里要乘上inputs的size
                 running_corrects += torch.sum(preds == labels)
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.item() / dataset_sizes[phase]
@@ -109,30 +109,34 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     model.load_state_dict(best_model_wts)
     return model
 
+
 '''
 可视化模型的预测结果
 该模型通用，用于展示少量预测图片
 '''
-def visualize_model(model,num_images=6):
-    was_training=model.training
-    model.eval()#验证
-    images_so_far=0
-    fig=plt.figure()
+
+
+def visualize_model(model, num_images=6):
+    was_training = model.training
+    model.eval()  # 验证
+    images_so_far = 0
+    fig = plt.figure()
     with torch.no_grad():
-        for i,(inputs,labels) in enumerate(dataloaders['val']):
-            inputs=inputs.to(device)
-            labels=labels.to(device)
-            outputs=model(inputs)
-            _,preds=torch.max(outputs,1)
+        for i, (inputs, labels) in enumerate(dataloaders['val']):
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
             for j in range(inputs.size[0]):
-                images_so_far+=1
-                ax=plt.subplot(num_images//2,2,images_so_far)
+                images_so_far += 1
+                ax = plt.subplot(num_images // 2, 2, images_so_far)
                 ax.axis('off')
                 ax.set_title('predict:{}'.format(class_names[preds[j]]))
                 imshow(inputs.cpu().data[j])
 
-                if images_so_far==num_images:
+                if images_so_far == num_images:
                     model.train(mode=was_training)
+
 
 # 加载预训练模型病重置最终完全连接层
 model_ft = models.resnet18(pretrained=True)  # 已经训练好的模型
@@ -143,8 +147,8 @@ criterion = nn.CrossEntropyLoss()  # 交叉熵
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
-model_ft=train_model(model_ft,
-                     criterion,
-                     optimizer_ft,
-                     exp_lr_scheduler,
-                     num_epochs=25)
+model_ft = train_model(model_ft,
+                       criterion,
+                       optimizer_ft,
+                       exp_lr_scheduler,
+                       num_epochs=25)

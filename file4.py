@@ -14,7 +14,7 @@ model=nn.Sequential(
     nn.ReLU(),
     nn.Linear(H,D_out)
 )
-loss_fn=nn.MSELoss(size_average=False)
+loss_fn=nn.MSELoss(reduction='sum')
 #采用了优化策略，利用Adam算法进行优化
 optimizer=torch.optim.Adam(model.parameters(),lr=learning_rate)
 #optimizer1=torch.optim.SGD(model.parameters(),lr=learning_rate)好像只找到了这两种优化策略

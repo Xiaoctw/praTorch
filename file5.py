@@ -25,7 +25,7 @@ N, D_in, H, D_out = 64, 1000, 10, 1
 x = Variable(torch.randn(N, D_in))
 y = Variable(torch.randn(N, D_out), requires_grad=False)
 model = TwoLayerNet(D_in, H, D_out)
-criterion = nn.MSELoss(size_average=False)
+criterion = nn.MSELoss(reduction='sum')
 # optimizer=torch.optim.Adam(model.parameters(),lr=1e-5)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-5)  # 进行优化,对于这种十分简单的模型，往往SGD效果更好
 pre = 100
