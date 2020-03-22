@@ -12,17 +12,19 @@ import torch.optim as optim
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        # 通道逐渐变大，大小逐渐变小
         self.conv1 = nn.Conv2d(3, 6, 5)  # 3->6,5*5大小
+        self.bn1 = nn.BatchNorm2d(6)  # 这里应该是通道数
         self.pool = nn.MaxPool2d(2, 2)  # 定义最大池化层
         self.conv2 = nn.Conv2d(6, 16, 5)
+        self.bn2 = nn.BatchNorm2d(16)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = self.pool(fun.relu(self.conv1(x)))
-        x = self.pool(fun.relu(self.conv2(x)))
+        # print(x.shape)
+        x = self.pool(fun.relu(self.bn1(self.conv1(x))))
+        x = self.pool(fun.relu(self.bn2(self.conv2(x))))
         x = x.view(-1, 16 * 5 * 5)  # 相当于展平
         x = fun.relu(self.fc1(x))
         x = fun.relu(self.fc2(x))
@@ -37,7 +39,6 @@ class Net(nn.Module):
 ``input[channel] = (input[channel] - mean[channel]) / std[channel]``
 """
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-#首先下载，如果下载好了就不需要下载了
 trainSet = torchvision.datasets.CIFAR10(root='./data',
                                         train=True,
                                         download=True,
@@ -85,8 +86,8 @@ net = net.to(device)  # 设置好设备
 # 这个不可以用！！！criterion=nn.MSELoss(reduction='sum')
 # 分类交叉熵
 criterion = nn.CrossEntropyLoss(reduction='sum')
-optimizer = torch.optim.SGD(net.parameters(), lr=0.000001, momentum=0.9)
-
+# optimizer = torch.optim.SGD(net.parameters(), lr=0.00001, momentum=0.9)
+optimizer=torch.optim.Adam(net.parameters(),lr=3e-5)
 for epoch in range(2):
     running_loss = 0.0
     for i, data in enumerate(trainLoader, 0):
